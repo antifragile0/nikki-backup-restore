@@ -2,13 +2,11 @@
 
 # Daftar URL dan lokasi tujuan
 FILES=(
-    "https://github.com/antifragile0/nikki-backup-restore/raw/refs/heads/main/nikkibackup.sh"
-    "https://github.com/antifragile0/nikki-backup-restore/raw/refs/heads/main/sync_time.sh"
-    "https://github.com/antifragile0/nikki-backup-restore/raw/refs/heads/main/s"
+    "https://github.com/antifragile0/nikki-backup-restore/raw/refs/heads/main/nikkibackup.sh:/usr/bin"
+    "https://github.com/antifragile0/nikki-backup-restore/raw/refs/heads/main/sync_time.sh:/usr/bin"
+    "https://github.com/antifragile0/nikki-backup-restore/raw/refs/heads/main/s:/usr/bin"
+    "https://github.com/antifragile0/nikki-backup-restore/raw/refs/heads/main/vnstat.db:/etc/vnstat"
 )
-
-# Folder tujuan
-DEST_FOLDER="/usr/bin"
 
 # Fungsi untuk mengunduh dan mengatur izin file
 download_and_set_permissions() {
@@ -17,7 +15,7 @@ download_and_set_permissions() {
     local filename=$(basename $url)
     local dest_path="$dest_folder/$filename"
 
-    echo "Mengunduh $filename..."
+    echo "Mengunduh $filename ke $dest_folder..."
     wget -O $dest_path $url
 
     if [ $? -eq 0 ]; then
@@ -29,6 +27,7 @@ download_and_set_permissions() {
 }
 
 # Proses setiap file
-for file_url in "${FILES[@]}"; do
-    download_and_set_permissions $file_url $DEST_FOLDER
+for file_info in "${FILES[@]}"; do
+    IFS=":" read -r file_url dest_folder <<< "$file_info"
+    download_and_set_permissions $file_url $dest_folder
 done
