@@ -35,7 +35,7 @@ log() {
 # Fungsi untuk menambahkan startup task untuk sync_time.sh
 add_startup_task() {
     local rc_local="/etc/rc.local"
-    local startup_cmd="sleep 60 && /usr/bin/sync_time.sh google.com &"
+    local startup_cmd="sleep 60 && /usr/bin/sync_time.sh google.com"
     
     # Pastikan rc.local ada dan executable
     if [ ! -f "$rc_local" ]; then
