@@ -80,11 +80,43 @@ if [ ${#URLS[@]} -ne ${#DESTINATIONS[@]} ]; then
     exit 1
 fi
 
-# Proses setiap file
+# Bangun opsi menu
+OPTIONS=()
+for i in "${!URLS[@]}"; do
+    filename=$(basename "${URLS[$i]}")
+    OPTIONS+=("$filename")
+done
+OPTIONS+=("Semua" "Keluar")
+
+# Tampilkan menu interaktif
+log "Pilih file yang ingin di-restore:"
+PS3="Masukkan nomor pilihan: "
+select opt in "${OPTIONS[@]}"; do
+    if [ "$opt" = "Keluar" ]; then
+        log "Keluar dari skrip."
+        exit 0
+    elif [ "$opt" = "Semua" ]; then
+        selected_indices=$(seq 0 $(( ${#URLS[@]} - 1 )))
+        break
+    elif [ -n "$opt" ]; then
+        # Cari indeks file yang dipilih
+        for i in "${!URLS[@]}"; do
+            if [ "$(basename "${URLS[$i]}")" = "$opt" ]; then
+                selected_indices="$i"
+                break 2
+            fi
+        done
+        log "Pilihan tidak valid. Silakan pilih lagi."
+    else
+        log "Pilihan tidak valid. Silakan pilih lagi."
+    fi
+done
+
+# Proses file yang dipilih
 success_count=0
 failure_count=0
 
-for i in "${!URLS[@]}"; do
+for i in $selected_indices; do
     download_and_set_permissions "${URLS[$i]}" "${DESTINATIONS[$i]}"
     if [ $? -eq 0 ]; then
         success_count=$((success_count + 1))
