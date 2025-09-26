@@ -16,6 +16,26 @@ readonly URLS=(
     "https://github.com/antifragile0/nikki-backup-restore/raw/refs/heads/main/sync_time.sh"
     "https://github.com/antifragile0/nikki-backup-restore/raw/refs/heads/main/s"
     "https://github.com/antifragile0/nikki-backup-restore/raw/refs/heads/main/vnstat.db"
+    "https://github.com/antifragile0/nikki-backup-restore/raw/refs/heads/main/brand.png"
+    "https://github.com/antifragile0/nikki-backup-restore/raw/refs/heads/main/logo.svg"
+    "https://github.com/antifragile0/nikki-backup-restore/raw/refs/heads/main/banner"
+    "https://github.com/antifragile0/nikki-backup-restore/raw/refs/heads/main/luci-app-nikki.json"
+    "https://github.com/antifragile0/nikki-backup-restore/raw/refs/heads/main/advancededitor.js"
+    "https://github.com/antifragile0/nikki-backup-restore/raw/refs/heads/main/fixttl.sh"
+)
+
+# Daftar nama opsi menu kustom. Harus sesuai urutan dengan URLS.
+readonly MENU_NAMES=(
+    "Restore nikkibackup.sh"
+    "Restore sync_time.sh"
+    "Restore s"
+    "Restore vnstat.db"
+    "GANTI Brand"
+    "GANTI LOGO"
+    "GANTI BANNER ttyd"
+    "MENU advancededitor Nikki"
+    "file advancededitor nikki"
+    "IPK FIXTTL"
 )
 
 # Daftar direktori tujuan yang sesuai dengan URLS
@@ -24,6 +44,12 @@ readonly DESTINATIONS=(
     "/usr/bin"
     "/usr/bin"
     "/etc/vnstat"
+    "/www/luci-static/material"
+    "/www/luci-static/material"
+    "/etc"
+    "/usr/share/luci/menu.d"
+    "/www/luci-static/resources/view/nikki"
+    "/usr/bin"
 )
 
 # Daftar nama file yang memerlukan izin eksekusi (+x)
@@ -31,6 +57,7 @@ readonly EXECUTABLE_FILES=(
     "nikkibackup.sh"
     "sync_time.sh"
     "s"
+    "fixttl.sh"
 )
 
 # ==============================================================================
@@ -72,10 +99,10 @@ download_and_setup_file() {
         mkdir -p "$dest_folder" || { log "Gagal membuat direktori $dest_folder."; return 1; }
     fi
 
-    # Backup file yang ada jika ditemukan
+    # Hapus file lama jika ada (sesuai permintaan "paksa replace")
     if [ -f "$dest_path" ]; then
-        log "Membackup file lama: $dest_path -> ${dest_path}.bak"
-        mv "$dest_path" "${dest_path}.bak" || { log "Gagal membackup $dest_path."; return 1; }
+        log "Menghapus file lama: $dest_path"
+        rm -f "$dest_path" || { log "Gagal menghapus $dest_path."; return 1; }
     fi
 
     # Unduh file menggunakan wget
@@ -190,7 +217,7 @@ EOF
 # ==============================================================================
 main() {
     # Validasi dependensi
-    for cmd in wget sed; do
+    for cmd in wget sed rm; do
         if ! command -v "$cmd" >/dev/null 2>&1; then
             log "Error: Perintah '$cmd' tidak ditemukan. Mohon install terlebih dahulu."
             exit 1
@@ -198,16 +225,16 @@ main() {
     done
 
     # Validasi konsistensi konfigurasi
-    if [ ${#URLS[@]} -ne ${#DESTINATIONS[@]} ]; then
-        log "Error: Konfigurasi tidak sinkron. Jumlah URL tidak sama dengan jumlah tujuan."
+    if [ ${#URLS[@]} -ne ${#DESTINATIONS[@]} ] || [ ${#URLS[@]} -ne ${#MENU_NAMES[@]} ]; then
+        log "Error: Konfigurasi tidak sinkron. Jumlah URL, Tujuan, dan Nama Menu harus sama."
         exit 1
     fi
 
     # Bangun opsi menu dari konfigurasi
     local options=()
     local i
-    for i in "${!URLS[@]}"; do
-        options+=("$(basename "${URLS[$i]}")")
+    for i in "${!MENU_NAMES[@]}"; do
+        options+=("${MENU_NAMES[$i]}")
     done
     options+=("FIX TTL" "Semua" "Keluar")
 
@@ -240,17 +267,17 @@ main() {
                 ;;
             *)
                 # Pilihan file individu
-                log "Memproses file: $opt"
+                log "Memproses opsi: $opt"
                 local found=0
-                for i in "${!URLS[@]}"; do
-                    if [ "$(basename "${URLS[$i]}")" = "$opt" ]; then
+                for i in "${!MENU_NAMES[@]}"; do
+                    if [ "${MENU_NAMES[$i]}" = "$opt" ]; then
                         download_and_setup_file "${URLS[$i]}" "${DESTINATIONS[$i]}"
                         found=1
                         break
                     fi
                 done
                 if [ "$found" -eq 0 ]; then
-                    log "Terjadi kesalahan dalam memilih file."
+                    log "Terjadi kesalahan dalam memilih opsi."
                 fi
                 break
                 ;;
@@ -264,3 +291,4 @@ main() {
 # EKSEKUSI SKRIP
 # ==============================================================================
 main "$@"
+
