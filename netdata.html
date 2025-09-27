@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Network Monitor</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#667eea">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+  const currentHost = window.location.hostname;
+  const scriptSrc = `http://${currentHost}:19999/dashboard.js`;
+  const scriptElement = document.createElement('script');
+  scriptElement.type = 'text/javascript';
+  scriptElement.src = scriptSrc;
+  document.head.appendChild(scriptElement);
+  </script>
+  <script>var netdataTheme='white'; // or 'slate' for the dark onevar netdataPrepCallback=function(){// code here // remove all css files - netdata will not load any now NETDATA.requiredCSS=[];};</script>
+
+<style>
+:root {
+  --primary: #667eea; --secondary: #f093fb; --accent: #4facfe;
+  --success: #4ade80; --warning: #fbbf24; --danger: #f87171; --info: #60a5fa;
+  --glass-bg: rgba(255, 255, 255, 0.1); --glass-border: rgba(255, 255, 255, 0.2);
+  --text-primary: #1f2937; --text-secondary: #6b7280; --text-white: #ffffff;
+  --bg-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --bg-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  --bg-accent: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  --shadow: 0 2px 4px rgba(0, 0, 0, 0.1); --shadow-lg: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 8px 16px rgba(0, 0, 0, 0.15); --transition: all 0.2s ease;
+  --border-radius: 16px; --border-radius-sm: 12px; --border-radius-xs: 8px;
+}
+
+[data-theme="dark"] {
+  --glass-bg: rgba(15, 23, 42, 0.4); --glass-border: rgba(71, 85, 105, 0.2);
+  --text-primary: #f8fafc; --text-secondary: #cbd5e1;
+  --bg-primary: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  --bg-secondary: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+  --bg-accent: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
+}
+
+[data-theme="ocean"] {
+  --primary: #0891b2; --secondary: #06b6d4; --accent: #0284c7;
+  --glass-bg: rgba(8, 145, 178, 0.15); --glass-border: rgba(6, 182, 212, 0.25);
+  --text-primary: #f0f9ff; --text-secondary: #bae6fd;
+  --bg-primary: linear-gradient(135deg, #0c4a6e 0%, #075985 100%);
+  --bg-secondary: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);
+  --bg-accent: linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%);
+}
+
+[data-theme="sunset"] {
+  --primary: #ea580c; --secondary: #f97316; --accent: #dc2626;
+  --glass-bg: rgba(234, 88, 12, 0.15); --glass-border: rgba(249, 115, 22, 0.25);
+  --text-primary: #fff7ed; --text-secondary: #fed7aa;
+  --bg-primary: linear-gradient(135deg, #9a3412 0%, #c2410c 100%);
+  --bg-secondary: linear-gradient(135deg, #ea580c 0%, #f97316 100%);
+  --bg-accent: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+}
+
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+
+body {
+  font: 400 0.9rem/1.5 'Inter', sans-serif; background: var(--bg-primary); min-height: 100vh;
+  color: var(--text-primary); overflow-x: hidden; -webkit-font-smoothing: antialiased;
+  position: relative; transition: var(--transition);
+}
+
+body::before {
+  content: ''; position: fixed; inset: 0; z-index: -2; background: var(--bg-primary);
+  animation: gradientShift 20s ease infinite;
+}
+
+body::after {
+  content: ''; position: fixed; inset: 0; z-index: -1; opacity: 0.6;
+  background: radial-gradient(circle at 25% 25%, var(--primary) 0%, transparent 50%),
+              radial-gradient(circle at 75% 75%, var(--secondary) 0%, transparent 50%);
+  animation: floatingOrbs 25s ease-in-out infinite;
+}
+
+@keyframes gradientShift{0%,100%{filter:hue-rotate(0deg)}50%{filter:hue-rotate(30deg)}}
+@keyframes floatingOrbs{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(20px,-15px) scale(1.1)}}
+
+.container{max-width:1400px;margin:0 auto;padding:16px}
+
+.control-panel {
+  position: fixed; top: 16px; right: 16px; z-index: 1000; background: var(--glass-bg);
+  backdrop-filter: blur(20px); border-radius: var(--border-radius); 
+  border: 1px solid var(--glass-border); box-shadow: var(--shadow-lg); 
+  padding: 8px; display: flex; gap: 8px; align-items: center;
+}
+
+.control-btn {
+  background: transparent; border: 1px solid var(--glass-border); 
+  border-radius: var(--border-radius-xs); padding: 8px 12px; cursor: pointer; 
+  color: var(--text-primary); font: 500 0.75rem 'Inter'; transition: var(--transition); 
+  display: flex; align-items: center; gap: 6px; min-width: 60px; height: 36px;
+  justify-content: center; position: relative;
+}
+
+.control-btn:hover{background:var(--glass-bg);border-color:var(--primary);transform:translateY(-1px);box-shadow:var(--shadow)}
+.control-btn.active{background:var(--primary);color:var(--text-white);border-color:var(--primary)}
+.control-btn.loading{pointer-events:none;opacity:0.7}
+
+.theme-selector {position: relative;}
+
+.theme-dropdown {
+  position: absolute; top: calc(100% + 4px); right: 0; background: var(--glass-bg);
+  backdrop-filter: blur(25px); border: 1px solid var(--glass-border);
+  border-radius: var(--border-radius-xs); box-shadow: var(--shadow-xl);
+  padding: 8px; min-width: 180px; opacity: 0; visibility: hidden;
+  transform: translateY(-8px); transition: var(--transition); z-index: 2000;
+}
+
+.theme-dropdown.show {opacity: 1; visibility: visible; transform: translateY(0);}
+
+.theme-option {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+  border-radius: var(--border-radius-xs); cursor: pointer; transition: var(--transition);
+  font: 500 0.8rem 'Inter'; color: var(--text-primary);
+}
+
+.theme-option:hover {background: var(--glass-bg); transform: translateX(2px);}
+.theme-option.active {background: var(--primary); color: var(--text-white);}
+
+.theme-preview {
+  width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--glass-border);
+  position: relative; overflow: hidden; flex-shrink: 0;
+}
+
+.theme-preview::before {content: ''; position: absolute; inset: 0; border-radius: 50%;}
+.theme-preview.light::before {background: linear-gradient(45deg, #667eea, #764ba2);}
+.theme-preview.dark::before {background: linear-gradient(45deg, #0f172a, #1e293b);}
+.theme-preview.ocean::before {background: linear-gradient(45deg, #0c4a6e, #075985);}
+.theme-preview.sunset::before {background: linear-gradient(45deg, #9a3412, #c2410c);}
+
+.section {
+  background: var(--glass-bg); backdrop-filter: blur(20px); 
+  border-radius: var(--border-radius); padding: 24px; margin-bottom: 24px; 
+  border: 1px solid var(--glass-border); box-shadow: var(--shadow); 
+  position: relative; overflow: hidden; transition: var(--transition);
+}
+
+.section::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: var(--bg-secondary); opacity: 0; transition: var(--transition);
+}
+
+.section:hover::before{opacity:1}
+
+.section-header {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;
+  flex-wrap: wrap; gap: 16px;
+}
+
+.section-title {
+  font: 700 1.5rem/1.2 'Inter'; color: var(--text-primary); display: flex;
+  align-items: center; gap: 10px;
+}
+
+.section-title i {
+  width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+  background: var(--bg-accent); color: var(--text-white); border-radius: var(--border-radius-xs); 
+  font-size: 1rem;
+}
+
+.section-subtitle{color:var(--text-secondary);font:400 0.85rem/1.4 'Inter';margin-top:6px}
+
+.grid{display:grid;gap:16px}
+.grid-4{grid-template-columns:repeat(4,1fr)}
+.grid-auto{grid-template-columns:repeat(auto-fit,minmax(90px,1fr))}
+
+.chart-row-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px}
+.chart-row-2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:20px}
+
+.card {
+  background: var(--glass-bg); backdrop-filter: blur(20px); 
+  border-radius: var(--border-radius-sm); border: 1px solid var(--glass-border); 
+  box-shadow: var(--shadow); transition: var(--transition); position: relative; overflow: hidden;
+}
+
+.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-xl);border-color:var(--primary)}
+
+.info-card {
+  padding: 16px; text-align: center; min-height: 110px; display: flex;
+  flex-direction: column; justify-content: center; align-items: center;
+}
+
+.info-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: var(--bg-accent); transform: scaleX(0); transition: var(--transition);
+}
+
+.info-card:hover::before{transform:scaleX(1)}
+
+.info-icon {
+  width: 48px; height: 48px; border-radius: var(--border-radius-xs); display: flex; 
+  align-items: center; justify-content: center; margin-bottom: 12px; 
+  color: var(--text-white); font-size: 20px; background: var(--bg-accent); 
+  box-shadow: var(--shadow);
+}
+
+.info-icon.status-connected{background:linear-gradient(135deg, #10b981, #059669)}
+.info-icon.status-disconnected{background:var(--bg-secondary)}
+.info-icon.status-checking{background:var(--bg-accent);animation:pulse 2s ease-in-out infinite}
+
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.7}}
+
+.info-title {
+  font: 600 0.7rem/1 'Inter'; color: var(--text-secondary); text-transform: uppercase;
+  letter-spacing: 0.05em; margin-bottom: 6px;
+}
+
+.info-value {
+  font: 700 1.1rem/1.2 'JetBrains Mono'; color: var(--text-primary); transition: var(--transition);
+}
+
+.info-value.status-connected{color:var(--success)}
+.info-value.status-disconnected{color:var(--danger)}
+.info-value.status-checking{color:var(--warning)}
+
+.status-indicator{display:inline-flex;align-items:center;gap:6px}
+
+.status-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--success);
+  animation: statusPulse 2s ease-in-out infinite;
+}
+
+.status-dot.disconnected{background:var(--danger);animation:none}
+.status-dot.checking{background:var(--warning)}
+
+@keyframes statusPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(1.2)}}
+
+.chart-container {
+  padding: 12px; min-height: 240px; display: flex; flex-direction: column;
+  justify-content: center; position: relative;
+}
+
+.chart-container::before {
+  content: ''; position: absolute; top: 50%; left: 50%; width: 32px; height: 32px;
+  margin: -16px 0 0 -16px; border: 2px solid var(--glass-border);
+  border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite;
+  opacity: 0; z-index: 1;
+}
+
+.chart-container.loading::before{opacity:1}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.btn {
+  background: var(--glass-bg); backdrop-filter: blur(20px); color: var(--text-primary);
+  border: 1px solid var(--glass-border); padding: 8px 12px; border-radius: var(--border-radius-xs);
+  cursor: pointer; font: 500 0.8rem/1 'Inter'; transition: var(--transition);
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  text-decoration: none; min-height: 36px; white-space: nowrap;
+}
+
+.btn:hover{transform:translateY(-1px);border-color:var(--primary);box-shadow:var(--shadow)}
+.btn.active{background:var(--primary);color:var(--text-white);border-color:var(--primary);box-shadow:var(--shadow)}
+
+.image-container {
+  background: var(--glass-bg); backdrop-filter: blur(20px); 
+  border-radius: var(--border-radius-sm); border: 1px solid var(--glass-border); 
+  overflow: hidden; padding: 20px; margin: 0 auto; max-width: 1200px; 
+  box-shadow: var(--shadow-lg);
+}
+
+.chart-image{display:none;width:100%;height:auto;border-radius:var(--border-radius-xs);transition:var(--transition);object-fit:contain}
+.chart-image:hover{transform:scale(1.01)}
+.chart-image.active{display:block}
+
+.toast {
+  position: fixed; top: 80px; right: 16px; z-index: 4000; background: var(--glass-bg);
+  backdrop-filter: blur(25px); padding: 12px 16px; border-radius: var(--border-radius-xs);
+  color: var(--text-primary); font: 500 0.8rem/1.4 'Inter'; max-width: 320px;
+  transform: translateX(400px); transition: var(--transition);
+  border: 1px solid var(--glass-border); box-shadow: var(--shadow-lg);
+  display: flex; align-items: center; gap: 8px;
+}
+
+.toast.show{transform:translateX(0)}
+.toast.success{border-left:3px solid var(--success)}
+.toast.error{border-left:3px solid var(--danger)}
+.toast.info{border-left:3px solid var(--info)}
+.toast.warning{border-left:3px solid var(--warning)}
+
+.toast-icon {
+  width: 16px; height: 16px; display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; color: var(--text-white); font-size: 0.7rem; flex-shrink: 0;
+}
+
+.toast.success .toast-icon{background:var(--success)}
+.toast.error .toast-icon{background:var(--danger)}
+.toast.info .toast-icon{background:var(--info)}
+.toast.warning .toast-icon{background:var(--warning)}
+
+@media (max-width: 768px) {
+  .container{padding:12px}
+  .section{padding:16px;margin-bottom:16px}
+  .chart-row-3{gap:12px;margin-bottom:16px}
+  .chart-row-2{gap:12px;margin-bottom:16px}
+  .grid{gap:12px}
+  .grid-4{grid-template-columns:repeat(2,1fr)}
+  .control-panel{top:12px;right:12px;flex-wrap:wrap}
+  .section-title{font-size:1.3rem}
+  .section-header{flex-direction:column;align-items:flex-start}
+  .image-container{padding:16px}
+  .btn{padding:6px 10px;font-size:0.75rem;min-height:32px}
+  .chart-container{padding:10px;min-height:200px}
+  .info-card{padding:12px;min-height:90px}
+  .info-icon{width:40px;height:40px;font-size:18px;margin-bottom:8px}
+  .info-value{font-size:1rem}
+  .theme-dropdown{min-width:160px;right:0}
+}
+
+@media (max-width: 480px) {
+  .section{padding:12px;margin-bottom:12px}
+  .chart-row-3{gap:10px;margin-bottom:12px}
+  .chart-row-2{gap:10px;margin-bottom:12px}
+  .grid{gap:10px}
+  .grid-auto{grid-template-columns:repeat(3,1fr)}
+  .section-title{font-size:1.2rem}
+  .control-panel{padding:6px;gap:6px}
+  .control-btn{padding:6px 8px;min-width:50px;font-size:0.7rem;height:32px}
+  .control-btn span{display:none}
+  .chart-container{padding:8px;min-height:180px}
+  .info-card{padding:10px;min-height:80px}
+  .info-icon{width:36px;height:36px;font-size:16px;margin-bottom:6px}
+  .info-value{font-size:0.9rem}
+  .info-title{font-size:0.65rem}
+  .theme-dropdown{min-width:140px;right:-20px}
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}
+}
+
+@media print {
+  .control-panel,.toast{display:none!important}
+  body{background:white!important;color:black!important}
+}
+</style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="control-panel">
+      <div class="theme-selector">
+        <button class="control-btn" id="themeBtn">
+          <i class="fas fa-palette" id="themeIcon"></i>
+          <span id="themeText">Light</span>
+        </button>
+        <div class="theme-dropdown" id="themeDropdown">
+          <div class="theme-option" data-theme="dark">
+            <div class="theme-preview dark"></div>
+            <span>Dark</span>
+          </div>
+          <div class="theme-option active" data-theme="light">
+            <div class="theme-preview light"></div>
+            <span>Light</span>
+          </div>
+          <div class="theme-option" data-theme="ocean">
+            <div class="theme-preview ocean"></div>
+            <span>Ocean</span>
+          </div>
+          <div class="theme-option" data-theme="sunset">
+            <div class="theme-preview sunset"></div>
+            <span>Sunset</span>
+          </div>
+        </div>
+      </div>
+      <button class="control-btn" id="refreshBtn">
+        <i class="fas fa-sync-alt" id="refreshIcon"></i>
+        <span>Refresh</span>
+      </button>
+    </div>
+
+    <section class="section">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">
+            <i class="fas fa-tachometer-alt"></i>
+            System Status
+          </h2>
+          <p class="section-subtitle">Real-time system information and connectivity status</p>
+        </div>
+      </div>
+      
+      <div class="grid grid-4">
+        <div class="card info-card">
+          <div class="info-icon"><i class="fas fa-calendar-day"></i></div>
+          <div class="info-title">Date</div>
+          <div id="currentDate" class="info-value">Loading...</div>
+        </div>
+        
+        <div class="card info-card">
+          <div class="info-icon"><i class="fas fa-clock"></i></div>
+          <div class="info-title">Time</div>
+          <div id="currentTime" class="info-value">Loading...</div>
+        </div>
+        
+        <div class="card info-card">
+          <div class="info-icon"><i class="fas fa-calendar-week"></i></div>
+          <div class="info-title">Day</div>
+          <div id="currentDay" class="info-value">Loading...</div>
+        </div>
+        
+        <div class="card info-card">
+          <div class="info-icon status-checking" id="connectionIcon">
+            <i class="fas fa-wifi"></i>
+          </div>
+          <div class="info-title">Connection</div>
+          <div id="connectionStatus" class="info-value status-checking">
+            <div class="status-indicator">
+              <span class="status-dot checking"></span>
+              <span>Checking...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">
+            <i class="fas fa-chart-line"></i>
+            Network Performance
+          </h2>
+          <p class="section-subtitle">Live network interface monitoring and metrics</p>
+        </div>
+      </div>
+      
+      <div class="chart-row-3">
+        <div class="card chart-container">
+          <div data-netdata="net.wwan0" data-title="MODEM" data-chart-library="gauge" data-after="-150" data-width="100%" data-points="720" data-gauge-generate-gradient="[0,5,10,60,100]" data-gauge-gradient-percent-color-0="#f87171" data-gauge-gradient-percent-color-5="#f87171" data-gauge-gradient-percent-color-10="#fbbf24" data-gauge-gradient-percent-color-60="#60a5fa" data-gauge-gradient-percent-color-100="#4ade80" data-colors="#667eea"></div>
+        </div>
+        
+        <div class="card chart-container">
+          <div data-netdata="system.cpu" data-chart-library="easypiechart" data-title="CPU USAGE" data-units="%" data-easypiechart-max-value="100" data-width="100%" data-points="720" data-colors="#f093fb"></div>
+        </div>
+        
+        <div class="card chart-container">
+          <div data-netdata="system.ram" data-dimensions="used|buffers|active|wired" data-append-options="percentage" data-chart-library="easypiechart" data-title="RAM USAGE" data-units="%" data-easypiechart-max-value="100" data-width="100%" data-points="720" data-colors="#4ade80"></div>
+        </div>
+
+        <div class="card chart-container">
+          <div data-netdata="net.br-lan" data-title="LAN" data-chart-library="easypiechart" data-after="-150" data-width="100%" data-points="720" data-colors="#4facfe"></div>
+        </div>
+
+        <div class="card chart-container">
+          <div data-netdata="system.net" data-dimensions="received" data-chart-library="easypiechart" data-title="DATA RECEIVED" data-width="100%" data-points="720" data-common-units="system.net.mainhead" data-colors="#4facfe"></div>
+        </div>
+        
+        <div class="card chart-container">
+          <div data-netdata="system.net" data-dimensions="sent" data-chart-library="easypiechart" data-title="DATA SENT" data-width="100%" data-points="720" data-common-units="system.net.mainhead" data-colors="#fbbf24"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">
+            <i class="fas fa-chart-bar"></i>
+            Network Statistics
+          </h2>
+          <p class="section-subtitle">Historical network usage data and analytics</p>
+        </div>
+      </div>
+      
+      <div class="grid grid-auto" style="margin-bottom:20px">
+        <button class="btn active" data-chart="summary">Summary</button>
+        <button class="btn" data-chart="minutes">5min</button>
+        <button class="btn" data-chart="hourly">Hour</button>
+        <button class="btn" data-chart="daily">Day</button>
+        <button class="btn" data-chart="monthly">Month</button>
+        <button class="btn" data-chart="yearly">Year</button>
+        <button class="btn" data-chart="top10">Top 10</button>
+      </div>
+      
+      <div class="image-container" id="imageContainer">
+        <img id="summary" class="chart-image active" src="/cgi-bin/ipinfo?vnstati&iface=br-lan&type=s" alt="Network Summary">
+        <img id="minutes" class="chart-image" src="/cgi-bin/ipinfo?vnstati&iface=br-lan&type=5" alt="5 Minutes Stats">
+        <img id="hourly" class="chart-image" src="/cgi-bin/ipinfo?vnstati&iface=br-lan&type=h" alt="Hourly Stats">
+        <img id="daily" class="chart-image" src="/cgi-bin/ipinfo?vnstati&iface=br-lan&type=d" alt="Daily Stats">
+        <img id="monthly" class="chart-image" src="/cgi-bin/ipinfo?vnstati&iface=br-lan&type=m" alt="Monthly Stats">
+        <img id="yearly" class="chart-image" src="/cgi-bin/ipinfo?vnstati&iface=br-lan&type=y" alt="Yearly Stats">
+        <img id="top10" class="chart-image" src="/cgi-bin/ipinfo?vnstati&iface=br-lan&type=t" alt="Top 10">
+      </div>
+    </section>
+  </div>
+
+  <div id="toast" class="toast">
+    <div class="toast-icon"><i class="fas fa-info-circle"></i></div>
+    <div class="toast-message"></div>
+  </div>
+
+<script>
+class NetworkMonitor {
+  constructor() {
+    this.cache = new Map();
+    this.themes = {
+      dark: { name: 'Dark', icon: 'fa-moon', color: '#0f172a' },
+      light: { name: 'Light', icon: 'fa-sun', color: '#667eea' },
+      ocean: { name: 'Ocean', icon: 'fa-water', color: '#0891b2' },
+      sunset: { name: 'Sunset', icon: 'fa-sun-o', color: '#ea580c' }
+    };
+    this.currentTheme = localStorage.getItem('theme') || 'dark';
+    this.state = { toastQueue: [], isToastShowing: false, dropdownOpen: false };
+    
+    this.timers = { datetime: null, connection: null };
+    this.init();
+  }
+
+  $(id) { 
+    if (!this.cache.has(id)) {
+      this.cache.set(id, document.getElementById(id));
+    }
+    return this.cache.get(id);
+  }
+
+  $$(selector) { return document.querySelectorAll(selector); }
+
+  init() {
+    try {
+      this.applyTheme(this.currentTheme);
+      this.setupEventListeners();
+      this.startTimers();
+      this.updateDateTime();
+      this.checkConnection();
+      this.showChart('summary');
+      setTimeout(() => this.showToast('System ready', 'success'), 500);
+    } catch (error) {
+      console.error('Init failed:', error);
+      this.showToast('Initialization failed', 'error');
+    }
+  }
+
+  setupEventListeners() {
+    // Theme button
+    this.$('themeBtn')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.toggleDropdown();
+    });
+
+    // Theme options
+    this.$$('.theme-option').forEach(opt => {
+      opt.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.setTheme(opt.dataset.theme);
+        this.hideDropdown();
+      });
+    });
+
+    // Refresh button
+    this.$('refreshBtn')?.addEventListener('click', () => this.refreshCharts());
+    
+    // Chart navigation
+    this.$$('[data-chart]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.$$('.btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        this.showChart(btn.dataset.chart);
+      });
+    });
+
+    // Close dropdown
+    document.addEventListener('click', () => this.state.dropdownOpen && this.hideDropdown());
+    
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && this.state.dropdownOpen) this.hideDropdown();
+      if (e.ctrlKey && e.key === 't') { e.preventDefault(); this.toggleDropdown(); }
+      if (e.ctrlKey && e.key === 'r') { e.preventDefault(); this.refreshCharts(); }
+    });
+  }
+
+  startTimers() {
+    this.timers.datetime = setInterval(() => this.updateDateTime(), 1000);
+    this.timers.connection = setInterval(() => this.checkConnection(), 30000);
+  }
+
+  toggleDropdown() {
+    this.state.dropdownOpen ? this.hideDropdown() : this.showDropdown();
+  }
+
+  showDropdown() {
+    const dropdown = this.$('themeDropdown');
+    if (!dropdown) return;
+    dropdown.classList.add('show');
+    this.state.dropdownOpen = true;
+    this.updateThemeOptions();
+  }
+
+  hideDropdown() {
+    const dropdown = this.$('themeDropdown');
+    if (!dropdown) return;
+    dropdown.classList.remove('show');
+    this.state.dropdownOpen = false;
+  }
+
+  updateThemeOptions() {
+    this.$$('.theme-option').forEach(opt => {
+      opt.classList.toggle('active', opt.dataset.theme === this.currentTheme);
+    });
+  }
+
+  setTheme(theme) {
+    if (!this.themes[theme]) return;
+    this.currentTheme = theme;
+    this.applyTheme(theme);
+    localStorage.setItem('theme', theme);
+    this.showToast(`${this.themes[theme].name} theme activated`, 'success');
+  }
+
+  applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    this.updateThemeButton();
+    
+    // Update meta theme-color
+    const metaTheme = document.querySelector('meta[name="theme-color"]');
+    if (metaTheme) {
+      metaTheme.content = this.themes[theme]?.color || '#667eea';
+    }
+  }
+
+  updateThemeButton() {
+    const themeData = this.themes[this.currentTheme];
+    if (!themeData) return;
+
+    const iconEl = this.$('themeIcon');
+    const textEl = this.$('themeText');
+    
+    if (iconEl) iconEl.className = `fas ${themeData.icon}`;
+    if (textEl) textEl.textContent = themeData.name;
+  }
+
+  updateDateTime() {
+    const now = new Date();
+    const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    
+    const timeEl = this.$('currentTime');
+    const dateEl = this.$('currentDate');
+    const dayEl = this.$('currentDay');
+    
+    if (timeEl) timeEl.textContent = now.toLocaleTimeString('en-US', { hour12: false });
+    if (dateEl) dateEl.textContent = now.toLocaleDateString('en-US');
+    if (dayEl) dayEl.textContent = days[now.getDay()];
+  }
+
+  async checkConnection() {
+    this.updateConnectionUI('checking', 'Checking...');
+    
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      
+      await fetch('https://www.google.com/favicon.ico', { 
+        method: 'HEAD', 
+        mode: 'no-cors', 
+        signal: controller.signal 
+      });
+      
+      clearTimeout(timeoutId);
+      this.updateConnectionUI('connected', 'Online');
+    } catch {
+      this.updateConnectionUI('disconnected', 'Offline');
+    }
+  }
+
+  updateConnectionUI(status, text) {
+    const configs = {
+      connected: { icon: 'fas fa-wifi', class: 'status-connected' },
+      disconnected: { icon: 'fas fa-wifi-slash', class: 'status-disconnected' },
+      checking: { icon: 'fas fa-spinner fa-spin', class: 'status-checking' }
+    };
+    
+    const config = configs[status];
+    const statusEl = this.$('connectionStatus');
+    const iconEl = this.$('connectionIcon');
+    
+    if (statusEl) {
+      statusEl.className = `info-value ${config.class}`;
+      statusEl.innerHTML = `
+        <div class="status-indicator">
+          <span class="status-dot ${status}"></span>
+          <span>${text}</span>
+        </div>`;
+    }
+    
+    if (iconEl) {
+      iconEl.className = `info-icon ${config.class}`;
+      iconEl.innerHTML = `<i class="${config.icon}"></i>`;
+    }
+  }
+
+  showChart(type) {
+    this.$$('.chart-image').forEach(img => img.classList.remove('active'));
+    
+    const container = this.$('imageContainer');
+    const img = this.$(type);
+    
+    if (!img) return;
+    
+    if (container) container.classList.add('loading');
+    
+    const showImage = () => {
+      img.classList.add('active');
+      if (container) container.classList.remove('loading');
+    };
+    
+    img.complete && img.naturalHeight > 0 ? showImage() : (img.onload = img.onerror = showImage);
+  }
+
+  refreshCharts() {
+    const timestamp = Date.now();
+    const refreshBtn = this.$('refreshBtn');
+    const refreshIcon = this.$('refreshIcon');
+    
+    if (refreshBtn) refreshBtn.classList.add('loading');
+    if (refreshIcon) refreshIcon.style.animation = 'spin 1s linear infinite';
+    
+    // Refresh static images
+    this.$$('.chart-image').forEach(img => {
+      const [src] = img.src.split('?');
+      img.src = `${src}?t=${timestamp}`;
+    });
+    
+    // Refresh NetData
+    if (typeof NETDATA !== 'undefined' && NETDATA.chartRefresh) {
+      try {
+        NETDATA.chartRefresh();
+      } catch (error) {
+        console.warn('NETDATA refresh failed:', error);
+      }
+    }
+    
+    setTimeout(() => {
+      if (refreshBtn) refreshBtn.classList.remove('loading');
+      if (refreshIcon) refreshIcon.style.animation = '';
+      this.showToast('Charts refreshed', 'success');
+    }, 1000);
+  }
+
+  showToast(message, type = 'info', duration = 3000) {
+    this.state.toastQueue.push({ message, type, duration });
+    if (!this.state.isToastShowing) this.processToastQueue();
+  }
+
+  processToastQueue() {
+    if (this.state.toastQueue.length === 0) {
+      this.state.isToastShowing = false;
+      return;
+    }
+    
+    this.state.isToastShowing = true;
+    const { message, type, duration } = this.state.toastQueue.shift();
+    
+    const toast = this.$('toast');
+    const toastMessage = toast?.querySelector('.toast-message');
+    const toastIcon = toast?.querySelector('.toast-icon i');
+    
+    if (!toast || !toastMessage || !toastIcon) {
+      this.state.isToastShowing = false;
+      return;
+    }
+    
+    const icons = {
+      success: 'fa-check-circle',
+      error: 'fa-exclamation-circle',
+      warning: 'fa-exclamation-triangle',
+      info: 'fa-info-circle'
+    };
+    
+    toast.className = `toast ${type}`;
+    toastIcon.className = `fas ${icons[type]}`;
+    toastMessage.textContent = message;
+    toast.classList.add('show');
+    
+    setTimeout(() => {
+      toast.classList.remove('show');
+      setTimeout(() => this.processToastQueue(), 300);
+    }, duration);
+  }
+
+  // Cleanup method
+  destroy() {
+    Object.values(this.timers).forEach(timer => timer && clearInterval(timer));
+    this.cache.clear();
+  }
+}
+
+// Initialize when DOM ready
+document.addEventListener('DOMContentLoaded', () => {
+  try {
+    window.networkMonitor = new NetworkMonitor();
+  } catch (error) {
+    console.error('Failed to initialize:', error);
+  }
+});
+</script>
+</body>
+</html>
