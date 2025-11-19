@@ -100,6 +100,7 @@ while true; do
             mv -fT config/rule_provider /etc/nikki/run/providers/rule && chmod +x /etc/nikki/run/providers/rule/*
             mv -f confignikki/cache.db /etc/nikki/run/cache.db && chmod +x /etc/nikki/run/cache.db
             mv -f confignikki/Antfrgl-GeoRule.yaml /etc/nikki/profiles/Antfrgl-GeoRule.yaml && chmod +x /etc/nikki/profiles/Antfrgl-GeoRule.yaml
+            mv -f confignikki/Antfrgl-RuleSET.yaml /etc/nikki/profiles/Antfrgl-RuleSET.yaml && chmod +x /etc/nikki/profiles/Antfrgl-RuleSET.yaml
             mv -f confignikki/config.yaml /etc/nikki/run/config.yaml && chmod +x /etc/nikki/run/config.yaml
             mv -f confignikki/nikki /etc/config/nikki
             rm -rf /tmp/Config-Open-ClashMeta-main
