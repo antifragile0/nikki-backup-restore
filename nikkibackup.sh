@@ -107,10 +107,10 @@ while true; do
             echo "Download Dashboard Yacd"
             sleep 2
             cd /tmp
-            wget -O /tmp/gh-pages.zip https://github.com/MetaCubeX/Yacd-meta/archive/refs/heads/gh-pages.zip
-            unzip -o /tmp/gh-pages.zip -d /tmp  # Use -o to overwrite existing files
-            rm -rf /tmp/gh-pages.zip
-            mv -fT /tmp/Yacd-meta-gh-pages /etc/nikki/run/ui/dashboard
+            wget -O /tmp/dist-cdn-fonts.zip https://github.com/Zephyruso/zashboard/releases/latest/download/dist-cdn-fonts.zip
+            unzip -o /tmp/dist-cdn-fonts.zip -d /tmp  # Use -o to overwrite existing files
+            rm -rf /tmp/dist-cdn-fonts.zip
+            mv -fT /tmp/dist /etc/nikki/run/ui/zashboard
             echo "Installation completed successfully!"
             sleep 3
             ;;
