@@ -42,7 +42,7 @@ while true; do
     echo " > 2 - Restore Backup Full Config"
     echo ""
     echo " >> MENU CONFIG"
-    echo " > 3 - Download Full Backup Config By RTA-WRT"
+    echo " > 3 - Download Full Backup Config By Antfrgl"
     echo ""
     echo "================================================"
     echo " > X - Exit Script"
@@ -54,7 +54,7 @@ while true; do
             echo "Backup Full Config..."
             sleep 2
             current_time=$(date +"%Y-%m-%d_%H-%M-%S")
-            output_tar_gz="/root/backup_config_nikki_${current_time}.tar.gz"
+            output_tar_gz="/root/Backup_NikkiConfig_${current_time}.tar.gz"
             files_to_backup=(
                 "/etc/nikki/mixin.yaml"
                 "/etc/nikki/profiles"
@@ -89,7 +89,7 @@ while true; do
         3)
             echo "Download Full Backup Config By RTA-WRT"
             sleep 2
-            wget -O /tmp/main.zip https://github.com/rtaserver/Config-Open-ClashMeta/archive/refs/heads/main.zip
+            wget -O /tmp/main.zip https://github.com/antifragile0/Config-Open-ClashMeta/archive/refs/heads/main.zip
             unzip -o /tmp/main.zip -d /tmp  # Use -o to overwrite existing files
             rm -rf /tmp/main.zip
             cd /tmp/Config-Open-ClashMeta-main || { echo "Failed to change directory"; cleanup; }
