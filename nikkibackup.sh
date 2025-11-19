@@ -104,7 +104,7 @@ while true; do
             mv -f confignikki/nikki /etc/config/nikki
             rm -rf /tmp/Config-Open-ClashMeta-main
             clear
-            echo "Download Dashboard Yacd"
+            echo "Download Zashboard by Zephyruso"
             sleep 2
             cd /tmp
             wget -O /tmp/dist-cdn-fonts.zip https://github.com/Zephyruso/zashboard/releases/latest/download/dist-cdn-fonts.zip
