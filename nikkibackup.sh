@@ -94,7 +94,6 @@ while true; do
             rm -rf /tmp/main.zip
             cd /tmp/Config-Open-ClashMeta-main || { echo "Failed to change directory"; cleanup; }
             mv -f config/Country.mmdb /etc/nikki/run/Country.mmdb && chmod +x /etc/nikki/run/Country.mmdb
-            mv -f config/GeoIP.dat /etc/nikki/run/GeoIP.dat && chmod +x /etc/nikki/run/GeoIP.dat
             mv -f config/GeoSite.dat /etc/nikki/run/GeoSite.dat && chmod +x /etc/nikki/run/GeoSite.dat
             mv -fT config/proxy_provider /etc/nikki/run/providers/proxy && chmod +x /etc/nikki/run/providers/proxy/*
             mv -fT config/rule_provider /etc/nikki/run/providers/rule && chmod +x /etc/nikki/run/providers/rule/*
