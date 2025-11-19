@@ -87,7 +87,7 @@ while true; do
             sleep 3
             ;;
         3)
-            echo "Download Full Backup Config By RTA-WRT"
+            echo "Download Full Backup Config By t.me/antfrgile"
             sleep 2
             wget -O /tmp/main.zip https://github.com/antifragile0/Config-Open-ClashMeta/archive/refs/heads/main.zip
             unzip -o /tmp/main.zip -d /tmp  # Use -o to overwrite existing files
@@ -96,10 +96,10 @@ while true; do
             mv -f config/Country.mmdb /etc/nikki/run/Country.mmdb && chmod +x /etc/nikki/run/Country.mmdb
             mv -f config/GeoIP.dat /etc/nikki/run/GeoIP.dat && chmod +x /etc/nikki/run/GeoIP.dat
             mv -f config/GeoSite.dat /etc/nikki/run/GeoSite.dat && chmod +x /etc/nikki/run/GeoSite.dat
-            mv -fT config/proxy_provider /etc/nikki/run/proxy_provider && chmod +x /etc/nikki/run/proxy_provider/*
-            mv -fT config/rule_provider /etc/nikki/run/rule_provider && chmod +x /etc/nikki/run/rule_provider/*
+            mv -fT config/proxy_provider /etc/nikki/run/providers/proxy && chmod +x /etc/nikki/run/providers/proxy/*
+            mv -fT config/rule_provider /etc/nikki/run/providers/rule && chmod +x /etc/nikki/run/providers/rule/*
             mv -f confignikki/cache.db /etc/nikki/run/cache.db && chmod +x /etc/nikki/run/cache.db
-            mv -f confignikki/config-wrt.yaml /etc/nikki/profiles/config-wrt.yaml && chmod +x /etc/nikki/profiles/config-wrt.yaml
+            mv -f confignikki/Antfrgl-GeoRule.yaml /etc/nikki/profiles/Antfrgl-GeoRule.yaml && chmod +x /etc/nikki/profiles/Antfrgl-GeoRule.yaml
             mv -f confignikki/config.yaml /etc/nikki/run/config.yaml && chmod +x /etc/nikki/run/config.yaml
             mv -f confignikki/nikki /etc/config/nikki
             rm -rf /tmp/Config-Open-ClashMeta-main
