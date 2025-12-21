@@ -26,7 +26,7 @@
   "config/connecticon-table-size": "small",
   "config/display-latency-in-rule": "true",
   "config/scroll-animation-effect": "false",
-  "config/custom-background-image": "https://raw.githubusercontent.com/antifragile0/rule/refs/heads/main/image%20(1)%20(1)1.png",
+  "config/custom-background-image": "https://raw.githubusercontent.com/antifragile0/nikki-backup-restore/refs/heads/main/background.png",
   "config/log-retention-limit": "1000",
   "config/medium-latency": "800",
   "config/number-of-charts-in-sidebar": "1",
