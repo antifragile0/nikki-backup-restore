@@ -16,7 +16,7 @@
   "config/use-connecticon-card": "false",
   "config/min-proxy-card-width": "130",
   "config/swipe-in-tabs": "false",
-  "config/import-settings-url": "https://raw.githubusercontent.com/antifragile0/rule/refs/heads/main/zashboard-settings.json",
+  "config/import-settings-url": "https://raw.githubusercontent.com/antifragile0/nikki-backup-restore/refs/heads/main/zashboard-modem-hp.json",
   "config/use-smart-group-sort": "false",
   "config/proxy-preview-type": "dots",
   "config/table-width-mode": "auto",
