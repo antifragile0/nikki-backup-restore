@@ -54,7 +54,7 @@
   "config/log-filter-regex": "",
   "config/proxy-sort-type": "defaultsort",
   "config/group-proxies-by-provider": "false",
-  "config/auto-import-settings": "false",
+  "config/auto-import-settings": "true",
   "config/proxy-chain-direction": "normal",
   "config/settings-menu-order": "[\"generalSettings\",\"overviewSettings\",\"backendSettings\",\"proxySettings\",\"connectionSettings\"]",
   "config/show-ip-and-connection-info": "false",
