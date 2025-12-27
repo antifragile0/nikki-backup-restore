@@ -63,7 +63,7 @@
   "config/connection-table-columns": "[\"chains\",\"host\",\"dlSpeed\",\"ulSpeed\",\"rule\",\"connectTime\",\"sourceIP\",\"destination\"]",
   "config/auto-disconnect-idle-udp-time": "300",
   "config/table-column-pinning": "{\"left\":[],\"right\":[]}",
-  "setup/api-list": "[{\"protocol\":\"http\",\"secondaryPath\":\"\",\"host\":\"192.168.1.1\",\"port\":9090,\"password\":\"reyre\",\"uuid\":\"97387935-fa2e-464f-a424-68ff8a421d97\"},{\"protocol\":\"http\",\"host\":\"192.168.43.1\",\"port\":\"9090\",\"secondaryPath\":\"\",\"password\":\"\",\"label\":\"\",\"disableUpgradeCore\":false,\"uuid\":\"e10117fc-471b-41e2-8c72-89d766bc2863\"}]",
+  "setup/api-list": "[{\"protocol\":\"http\",\"host\":\"192.168.43.1\",\"port\":\"9090\",\"secondaryPath\":\"\",\"password\":\"\",\"label\":\"\",\"uuid\":\"4833b38c-4719-4cf8-b19c-7a7d255f3b27\"}]",
   "config/proxies-count-mode": "aliveTotal",
   "config/proxy-card-size": "small",
   "config/log-search-history": "[]",
